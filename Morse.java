@@ -27,8 +27,22 @@ public class Morse {
         }
 	}
 
-
-	public static void decode(){}
+	public static void decode(){
+		Node tete = head;
+		for(char carac = Pep8.chari();carac != '\n';carac = Pep8.chari()){
+			if(carac == '.'){
+				tete = tete.dotNext;
+			}else if(carac == '-'){
+				tete = tete.lineNext;
+			}
+		}
+		
+		try{
+			Pep8.charo(tete.encodedCharacter);
+		}catch(NullPointerException e){
+			Pep8.stro("nop");
+		}
+	}
 
     public  static void translate(){}
 
