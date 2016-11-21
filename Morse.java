@@ -26,26 +26,64 @@ public class Morse {
 			}
         }
 	}
-
-	public static void decode(){
-		Node tete = head;
-		for(char carac = Pep8.chari();carac != '\n';carac = Pep8.chari()){
-			if(carac == '.'){
-				tete = tete.dotNext;
-			}else if(carac == '-'){
-				tete = tete.lineNext;
-			}
-		}
-		
+	
+	/*Sert à afficher le caractere 
+	 * codé ou si il n'existe pas un 
+	 * String entrée en param.
+	 * @params
+	 * 		Node tete
+	 * 		String nop
+	 * */
+	public static void affiche(Node tete,String nop){
 		if(tete != null && tete.encodedCharacter != '0'){
 			Pep8.charo(tete.encodedCharacter);
 		}else{
-			Pep8.stro("nop");
+			Pep8.stro(nop);
 		}
+	}
+	
+	/*Sert à faire avancer le head dans le
+	 * noeud par rapport au caractere
+	 * qui correspond.
+	 * @params
+	 * 		Node tete
+	 * 		Node carac
+	 * */
+	public static Node next(Node tete,char carac){
+		if(carac == '.'){
+				tete = tete.dotNext;
+		}else if(carac == '-'){
+				tete = tete.lineNext;
+		}
+		return tete;
+	}
+	
+	public static void decode(){
+		Node tete = head;
+		for(char carac = Pep8.chari();carac != '\n';carac = Pep8.chari()){
+			tete = next(tete,carac);
+		}
+		
+		affiche(tete,"nop");
 		Pep8.charo('\n');
 	}
 
-    public  static void translate(){}
+    public  static void translate(){
+    	Node tete = head;
+    	for(char carac = Pep8.chari();carac != '\n';carac = Pep8.chari()){
+    		if(carac != ' '){
+    			if(tete != null){
+    				tete = next(tete,carac);
+    			}
+    		}else{
+    			affiche(tete,"?");
+    			tete = head;
+    		}
+    	}
+    	
+    	affiche(tete,"?");
+    	Pep8.charo('\n');
+    }
 
     public static void addRule(){}
 
