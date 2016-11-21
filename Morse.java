@@ -37,9 +37,9 @@ public class Morse {
 			}
 		}
 		
-		try{
+		if(tete != null){
 			Pep8.charo(tete.encodedCharacter);
-		}catch(NullPointerException e){
+		}else{
 			Pep8.stro("nop");
 		}
 	}
