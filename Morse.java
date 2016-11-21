@@ -37,11 +37,12 @@ public class Morse {
 			}
 		}
 		
-		if(tete != null){
+		if(tete != null && tete.encodedCharacter != '0'){
 			Pep8.charo(tete.encodedCharacter);
 		}else{
 			Pep8.stro("nop");
 		}
+		Pep8.charo('\n');
 	}
 
     public  static void translate(){}
