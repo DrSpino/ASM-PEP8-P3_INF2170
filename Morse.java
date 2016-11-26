@@ -2,7 +2,9 @@ public class Morse {
 
     public static Node head = new Node('0',new Node('E',new Node('0',new Node('S',null,null),null),null),
             new Node('T',null,new Node('0',null,new Node('O',null,null))));
-
+    
+    public static int total;
+    
 	public static void main(String [] args) {
 
 		char command = Pep8.chari();
@@ -18,7 +20,9 @@ public class Morse {
                     addRule();
                     break;
                 case 'l':
-                    list();
+                	total = 0;
+                    list(head);
+                    Pep8.stro("total="+total+'\n');
                     break;
                 case 'c':
                     catalog();
@@ -103,7 +107,20 @@ public class Morse {
     	tete.encodedCharacter = carac;
     }
 
-    public static void list(){}
+    public static void list(Node tete){
+    	if(tete.encodedCharacter != '0'){
+    		Pep8.charo(tete.encodedCharacter);
+    		Pep8.charo('\n');
+    		total += 1;
+    	}
+    	
+    	if(tete.dotNext != null){
+    		list(tete.dotNext);
+    	}
+    	if(tete.lineNext != null){
+    		list(tete.lineNext);
+    	}
+    }
 
     public static void catalog() {}
 
