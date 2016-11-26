@@ -24,6 +24,7 @@ public class Morse {
                     catalog();
                     break;
 			}
+			command = Pep8.chari();
         }
 	}
 	
@@ -49,10 +50,10 @@ public class Morse {
 	 * 		Node tete
 	 * 		Node carac
 	 * */
-	public static Node next(Node tete,char carac){
-		if(carac == '.'){
+	public static Node next(Node tete,char signe){
+		if(signe == '.'){
 				tete = tete.dotNext;
-		}else if(carac == '-'){
+		}else if(signe == '-'){
 				tete = tete.lineNext;
 		}
 		return tete;
@@ -60,20 +61,19 @@ public class Morse {
 	
 	public static void decode(){
 		Node tete = head;
-		for(char carac = Pep8.chari();carac != '\n';carac = Pep8.chari()){
-			tete = next(tete,carac);
+		for(char signe = Pep8.chari();signe != '\n';signe = Pep8.chari()){
+			tete = next(tete,signe);
 		}
-		
 		affiche(tete,"nop");
 		Pep8.charo('\n');
 	}
 
-    public  static void translate(){
+    public static void translate(){
     	Node tete = head;
-    	for(char carac = Pep8.chari();carac != '\n';carac = Pep8.chari()){
-    		if(carac != ' '){
+    	for(char signe = Pep8.chari();signe != '\n';signe = Pep8.chari()){
+    		if(signe != ' '){
     			if(tete != null){
-    				tete = next(tete,carac);
+    				tete = next(tete,signe);
     			}
     		}else{
     			affiche(tete,"?");
@@ -85,7 +85,23 @@ public class Morse {
     	Pep8.charo('\n');
     }
 
-    public static void addRule(){}
+    public static void addRule(){
+    	Node tete = head;
+    	char carac = Pep8.chari();
+    	for(char signe = Pep8.chari();signe != '\n';signe = Pep8.chari()){
+    		
+    		if(next(tete,signe) == null){
+    			if(signe == '.'){
+    				tete.dotNext = new Node('0',null,null);
+    			}else if(signe == '-'){
+    				tete.lineNext = new Node('0',null,null);
+    			}
+    		}
+    		
+    		tete = next(tete,signe);
+    	}
+    	tete.encodedCharacter = carac;
+    }
 
     public static void list(){}
 
