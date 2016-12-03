@@ -1,0 +1,131 @@
+;******* Main
+main:    CALL init  
+         CALL fin  
+       
+;******** Initialisation de la chaine de depart
+init:    LDA     mLength,i   
+         CALL    new         ;#carac #dotNext #lineNext #before
+         LDA     0,i         
+         LDBYTEA '0',i       
+         STBYTEA carac,x     
+         STX     begin,d     
+         STX     head,d   
+;  Noeud 'E' 
+         LDA     mLength,i   
+         CALL    new         ;#carac #dotNext #lineNext #before
+         LDA     0,i         
+         LDBYTEA 'E',i       
+         STBYTEA carac,x     
+         LDA     head,d      
+         STA     before,x    
+         STX     head,d      
+         LDX     before,x    
+         LDA     head,d      
+         STA     dotNext,x   
+;  Noeud '0'
+         LDX     dotNext,x   
+         LDA     mLength,i   
+         CALL    new         ;#carac #dotNext #lineNext #before
+         LDA     0,i         
+         LDBYTEA '0',i       
+         STBYTEA carac,x     
+         LDA     head,d      
+         STA     before,x    
+         STX     head,d      
+         LDX     before,x    
+         LDA     head,d      
+         STA     dotNext,x  
+;  Noeud 'S'
+         LDX     dotNext,x   
+         LDA     mLength,i   
+         CALL    new         ;#carac #dotNext #lineNext #before
+         LDA     0,i         
+         LDBYTEA 'S',i       
+         STBYTEA carac,x     
+         LDA     head,d      
+         STA     before,x    
+         STX     head,d      
+         LDX     before,x    
+         LDA     head,d      
+         STA     dotNext,x  
+ ; Noeud 'T'
+         LDX     begin,d     
+         LDA     mLength,i   
+         CALL    new         ;#carac #dotNext #lineNext #before
+         LDA     0,i         
+         LDBYTEA 'T',i       
+         STBYTEA carac,x     
+         LDA     begin,d      
+         STA     before,x    
+         STX     head,d      
+         LDX     before,x    
+         LDA     head,d      
+         STA     lineNext,x  
+; Noeud '0'
+         LDX     lineNext,x  
+         LDA     mLength,i   
+         CALL    new         ;#carac #dotNext #lineNext #before
+         LDA     0,i         
+         LDBYTEA '0',i       
+         STBYTEA carac,x     
+         LDA     head,d      
+         STA     before,x    
+         STX     head,d      
+         LDX     before,x    
+         LDA     head,d      
+         STA     lineNext,x   
+; Noeud 'O'
+         LDX     lineNext,x  
+         LDA     mLength,i   
+         CALL    new         ;#carac #dotNext #lineNext #before
+         LDA     0,i         
+         LDBYTEA 'O',i       
+         STBYTEA carac,x     
+         LDA     head,d      
+         STA     before,x    
+         STX     head,d      
+         LDX     before,x    
+         LDA     head,d      
+         STA     lineNext,x  
+         CALL    out
+         ret0 
+
+;out utilisé pour verifier depuis le output
+out:     LDX     begin,d     
+         CHARO   carac,x     
+         LDX     dotNext,x   
+         CHARO   carac,x     
+         LDX     dotNext,x   
+         CHARO   carac,x     
+         LDX     dotNext,x   
+         CHARO   carac,x     
+         LDX     begin,d     
+         LDX     lineNext,x  
+         CHARO   carac,x     
+         LDX     lineNext,x  
+         CHARO   carac,x     
+         LDX     lineNext,x  
+         CHARO   carac,x 
+         ret0
+    
+fin:     STOP        
+        
+begin:   .BLOCK  2           ; #2h debut de liste
+head:    .BLOCK  2           ; #2h tête de liste
+;
+;****** structure du noeud
+carac:   .EQUATE 0           ;#1c
+dotNext: .EQUATE 1           ;#2h
+lineNext:.EQUATE 3           ;#2h
+before:  .EQUATE 5           ;#2h
+mLength: .EQUATE 7           ;taille d'un noeud
+;******* operator new
+; Precondition: A contains number of bytes
+; Postcondition: X contains pointer to bytes
+new:     LDX     hpPtr,d     ;returned pointer
+         ADDA    hpPtr,d     ;allocate from heap
+         STA     hpPtr,d     ;update hpPtr
+         RET0                
+hpPtr:   .ADDRSS heap        ;address of next free byte
+heap:    .BLOCK  1           ;first byte in the heap
+         .END                  
