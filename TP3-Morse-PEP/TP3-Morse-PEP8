@@ -1,8 +1,32 @@
 ;******* Main
-main:    CALL init  
-         CALL fin  
-       
-;******** Initialisation de la chaine de depart
+;*****************************
+main:    CALL    init  
+loop:    LDA     0,i         ;
+         CHARI   command,d
+         LDBYTEA command,d   ;
+         CPA     'q',i       ;
+         BRNE    decoder     ;
+         CALL    fin         ;
+decoder: CPA     'd',i       ;
+         BRNE    traduire    ;
+         CALL    decode      ;
+traduire:CPA     't',i       ;
+         BRNE    ajoute      ;
+         ;call translate()
+ajoute:  CPA     'a',i       ;
+         BRNE    lister      ;
+         ;call addRule()
+lister:  CPA     'l',i       ;
+         BRNE    cata        ;
+         ;call lister()      ;
+cata:    CPA     'c',i       ;
+         BRNE    loop        ;
+         ;call  catalog()    ;
+         BR      loop        ;
+          
+command: .BLOCK 1            ;#1c       
+;******** Initialisation 
+;*****************************
 init:    LDA     mLength,i   
          CALL    new         ;#carac #dotNext #lineNext #before
          LDA     0,i         
@@ -87,33 +111,46 @@ init:    LDA     mLength,i
          LDX     before,x    
          LDA     head,d      
          STA     lineNext,x  
-         CALL    out
          ret0 
-
-;out utilisé pour verifier depuis le output
-out:     LDX     begin,d     
-         CHARO   carac,x     
-         LDX     dotNext,x   
-         CHARO   carac,x     
-         LDX     dotNext,x   
-         CHARO   carac,x     
-         LDX     dotNext,x   
-         CHARO   carac,x     
-         LDX     begin,d     
-         LDX     lineNext,x  
-         CHARO   carac,x     
-         LDX     lineNext,x  
-         CHARO   carac,x     
-         LDX     lineNext,x  
-         CHARO   carac,x 
-         ret0
-    
+;***** Methode decode
+;*****************************
+decode:  LDX     begin,d     ; X = begin
+loopDe:  LDA     0,i         ; while(signe != '\n'){
+         CHARI   signe,d     ;    signe = lireChar
+         LDBYTEA signe,d     ;
+         CPA     '\n',i      ; 
+         BREQ    outDecod    ;
+         CPA     '.',i       ;    
+         BRNE    lineDe      ;    if(signe == '.'){
+         LDX     dotNext,x   ;        X = X.dotNext
+         BR      loopDe      ;    }
+lineDe:  CPA     '-',i       ;    
+         BRNE    outDecod    ;    if(signe == '-'){
+         LDX     lineNext,x  ;        X = X.lineNext
+         BR      loopDe      ;    }
+outDecod:LDA     0,i         ;
+         LDBYTEA carac,x     ;    A = X.carac
+         CPA     0,i         ;
+         BRNE    nopDecod    ;    if(X.carac == null){
+         STRO    nopDe,d     ;        afficher("nop") 
+nopDecod:CPA     '0',i       ;    
+         BRNE    Decode      ;    }else if(X.carac == '0'){
+         STRO    nopDe,d     ;        afficher("nop")
+         BR      endDecod    ;    }else{
+Decode:  CHARO   carac,x     ;        afficher(X.carac)}
+endDecod:CHARO   '\n',i      ;    afficher('\n')
+         ret0                ;}
+;
+signe:   .BLOCK  1           ;#1c
+nopDe:   .ASCII "nop\x00"
+;*****************************
 fin:     STOP        
-        
+;*****************************        
 begin:   .BLOCK  2           ; #2h debut de liste
 head:    .BLOCK  2           ; #2h tête de liste
 ;
 ;****** structure du noeud
+;*****************************
 carac:   .EQUATE 0           ;#1c
 dotNext: .EQUATE 1           ;#2h
 lineNext:.EQUATE 3           ;#2h
