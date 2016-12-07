@@ -12,7 +12,7 @@ decoder: CPA     'd',i       ;
          CALL    decode      ;
 traduire:CPA     't',i       ;
          BRNE    ajoute      ;
-         ;call translate()
+         CALL    translt     ;
 ajoute:  CPA     'a',i       ;
          BRNE    lister      ;
          ;call addRule()
@@ -135,15 +135,15 @@ loopDe:  LDA     0,i         ; while(signe != '\n'){
          BRNE    lineDe      ;    if(signe == '.'){
          LDA     dotNext,x   ;
          CPA     0,i         ;
-         BREQ    nopDecod    ;
-         LDX     dotNext,x   ;        X = X.dotNext
+         BREQ    nopDecod    ;        if(X.dotNext != null){
+         LDX     dotNext,x   ;            X = X.dotNext }
          BR      loopDe      ;    }
 lineDe:  CPA     '-',i       ;    
          BRNE    outDecod    ;    if(signe == '-'){
          LDA     lineNext,x  ;
          CPA     0,i         ;
-         BREQ    nopDecod    ;
-         LDX     lineNext,x  ;        X = X.lineNext
+         BREQ    nopDecod    ;        if(X.lineNext != null){
+         LDX     lineNext,x  ;            X = X.lineNext }
          BR      loopDe      ;    }
 outDecod:LDA     0,i         ;
          LDBYTEA carac,x     ;    A = X.carac
@@ -155,13 +155,68 @@ Decode:  CHARO   carac,x     ;        afficher(X.carac)}
 endDecod:CHARO   '\n',i      ;    afficher('\n')
          ret0                ;}
 ;
-signe:   .BLOCK  1           ;#1c
 nopDe:   .ASCII "nop\x00"
 ;*****************************
+;******* Methode translate
+;*****************************
+translt: LDX     begin,d     ;
+         LDA     0,i         ;
+         STA     nopTrs,d    ;
+loopTrs: LDA     0,i         ;
+         CHARI   signe,d     ;
+         LDBYTEA signe,d     ;
+         CPA     '\n',i      ;
+         BREQ    endTrans    ;
+         CPA     ' ',i       ;
+         BREQ    outTrans    ;
+         CPA     '.',i       ;
+         BRNE    lineTran    ;
+         LDA     dotNext,x   ;
+         CPA     0,i         ;
+         BREQ    nopTrans    ;
+         LDX     dotNext,x   ;
+lineTran:CPA     '-',i       ;
+         BRNE    loopTrs     ;
+         LDA     lineNext,x  ;
+         CPA     0,i         ;
+         BREQ    nopTrans    ;
+         LDX     lineNext,x  ;
+         BR      loopTrs     ;
+
+nopTrans:LDA     1,i         ;
+         STA     nopTrs,d    ;
+         BR      loopTrs     ;
+
+endTrans:LDA     1,i         ;
+         STA     endTrs,d    ; 
+
+outTrans:LDA     0,i         ;
+         LDBYTEA carac,x     ;
+         CPA     0,i         ;
+         BRNE    decodTrs    ;
+
+rienTrs: STRO    nopTr,d     ;
+         BR      finiTrs     ;        
+decodTrs:LDA     nopTrs,d    ;
+         CPA     0,i         ;
+         BRNE    rienTrs     ;
+         CHARO   carac,x     ;
+
+finiTrs: LDA     endTrs,n    ;
+         CPA     0,i         ;
+         BREQ    translt     ;
+         CHARO   '\n',i      ;
+         ret0                ;
+
+nopTr:   .ASCII "?\x00"
+endTrs:  .EQUATE 0
+nopTrs:  .BLOCK  2
+
 fin:     STOP        
 ;*****************************        
 begin:   .BLOCK  2           ; #2h debut de liste
 head:    .BLOCK  2           ; #2h tête de liste
+signe:   .BLOCK  1           ;#1c
 ;
 ;****** structure du noeud
 ;*****************************
