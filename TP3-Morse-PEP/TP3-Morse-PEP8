@@ -29,15 +29,18 @@ command: .BLOCK 1            ;#1c
 ;*****************************
 init:    LDA     mLength,i   
          CALL    new         ;#carac #dotNext #lineNext #before
-         LDA     0,i         
-         LDBYTEA '0',i       
+         LDA     0,i   
+         STA     dotNext,x
+         STA     lineNext,x     
          STBYTEA carac,x     
          STX     begin,d     
          STX     head,d   
 ;  Noeud 'E' 
          LDA     mLength,i   
          CALL    new         ;#carac #dotNext #lineNext #before
-         LDA     0,i         
+         LDA     0,i   
+         STA     dotNext,x
+         STA     lineNext,x       
          LDBYTEA 'E',i       
          STBYTEA carac,x     
          LDA     head,d      
@@ -50,8 +53,9 @@ init:    LDA     mLength,i
          LDX     dotNext,x   
          LDA     mLength,i   
          CALL    new         ;#carac #dotNext #lineNext #before
-         LDA     0,i         
-         LDBYTEA '0',i       
+         LDA     0,i    
+         STA     dotNext,x
+         STA     lineNext,x     
          STBYTEA carac,x     
          LDA     head,d      
          STA     before,x    
@@ -64,6 +68,8 @@ init:    LDA     mLength,i
          LDA     mLength,i   
          CALL    new         ;#carac #dotNext #lineNext #before
          LDA     0,i         
+         STA     dotNext,x
+         STA     lineNext,x 
          LDBYTEA 'S',i       
          STBYTEA carac,x     
          LDA     head,d      
@@ -76,7 +82,9 @@ init:    LDA     mLength,i
          LDX     begin,d     
          LDA     mLength,i   
          CALL    new         ;#carac #dotNext #lineNext #before
-         LDA     0,i         
+         LDA     0,i        
+         STA     dotNext,x
+         STA     lineNext,x  
          LDBYTEA 'T',i       
          STBYTEA carac,x     
          LDA     begin,d      
@@ -90,7 +98,8 @@ init:    LDA     mLength,i
          LDA     mLength,i   
          CALL    new         ;#carac #dotNext #lineNext #before
          LDA     0,i         
-         LDBYTEA '0',i       
+         STA     dotNext,x
+         STA     lineNext,x       
          STBYTEA carac,x     
          LDA     head,d      
          STA     before,x    
@@ -102,7 +111,9 @@ init:    LDA     mLength,i
          LDX     lineNext,x  
          LDA     mLength,i   
          CALL    new         ;#carac #dotNext #lineNext #before
-         LDA     0,i         
+         LDA     0,i        
+         STA     dotNext,x
+         STA     lineNext,x  
          LDBYTEA 'O',i       
          STBYTEA carac,x     
          LDA     head,d      
@@ -122,20 +133,23 @@ loopDe:  LDA     0,i         ; while(signe != '\n'){
          BREQ    outDecod    ;
          CPA     '.',i       ;    
          BRNE    lineDe      ;    if(signe == '.'){
+         LDA     dotNext,x   ;
+         CPA     0,i         ;
+         BREQ    nopDecod    ;
          LDX     dotNext,x   ;        X = X.dotNext
          BR      loopDe      ;    }
 lineDe:  CPA     '-',i       ;    
          BRNE    outDecod    ;    if(signe == '-'){
+         LDA     lineNext,x  ;
+         CPA     0,i         ;
+         BREQ    nopDecod    ;
          LDX     lineNext,x  ;        X = X.lineNext
          BR      loopDe      ;    }
 outDecod:LDA     0,i         ;
          LDBYTEA carac,x     ;    A = X.carac
          CPA     0,i         ;
-         BRNE    nopDecod    ;    if(X.carac == null){
-         STRO    nopDe,d     ;        afficher("nop") 
-nopDecod:CPA     '0',i       ;    
-         BRNE    Decode      ;    }else if(X.carac == '0'){
-         STRO    nopDe,d     ;        afficher("nop")
+         BRNE    Decode      ;    
+nopDecod:STRO    nopDe,d     ;        afficher("nop")
          BR      endDecod    ;    }else{
 Decode:  CHARO   carac,x     ;        afficher(X.carac)}
 endDecod:CHARO   '\n',i      ;    afficher('\n')
