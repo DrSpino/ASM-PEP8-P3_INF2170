@@ -24,7 +24,7 @@ lister:  CPA     'l',i       ;
          CHARO   '\n',i      ;
 cata:    CPA     'c',i       ;
          BRNE    loop        ;
-         ;call  catalog()    ;
+         CALL    catalog     ;
          BR      loop        ;
 
 stTotal: .ASCII "total=\x00" ;          
@@ -35,7 +35,8 @@ init:    LDA     mLength,i
          CALL    new         ;#carac #dotNext #lineNext #before
          LDA     0,i   
          STA     dotNext,x
-         STA     lineNext,x     
+         STA     lineNext,x  
+         STA     before,x   
          STBYTEA carac,x     
          STX     begin,d     
          STX     head,d   
@@ -321,19 +322,94 @@ lineList:LDA     pLineNex,s
 endList: ADDSP   4,i         ;#pDotNext #pLineNext
          ret0                ;
 
-pDotNext:.EQUATE 2           ;#2h
-pLineNex:.EQUATE 0           ;#2h
-         
-total:   .BLOCK  2           ;#2d
 ;*****************************
-fin:     STOP        
+;******** Methode catalogue
+;*****************************
+catalog: LDX     begin,d
+         LDA     0,i
+         STA     total,d
+
+cataRec: SUBSP   4,i         ;#pDotNext #pLineNext 
+         
+         LDA     dotNext,x
+         STA     pDotNext,s 
+         LDA     lineNext,x
+         STA     pLineNex,s        
+         
+         LDA     0,i
+         LDBYTEA carac,x
+         CPA     0,i
+         BREQ    dotcata
+         CHARO   carac,x
+         
+loopCata:LDA     before,x
+         CPA     0,i
+         BREQ    outCata
+         SUBSP   2,i         ;#pileBefo
+         LDA     love,n
+         STA     pileBefo,s
+         LDA     compteur,d
+         ADDA    1,i
+         STA     compteur,d
+         LDX     before,x
+         BR      loopCata
+
+outCata: LDX     begin,d
+loopOut: LDA     compteur,d
+         SUBA    1,i
+         CPA     -1,i
+         BREQ    returnCa
+         
+         LDA     pileBefo,s
+         CPA     dotNext,x
+         BRNE    outLine
+         CHARO   '.',i
+         BR      loopOut
+outLine: CPA     lineNext,x
+         BRNE    loopOut
+         CHARO   '-',i
+         BR      loopOut 
+                  
+
+returnCa:CHARO   '\n',i 
+         LDA     total,d
+         ADDA    1,i
+         STA     total,d
+ 
+
+dotcata: LDA     pDotNext,s
+         CPA     0,i
+         BREQ    linecata
+         LDX     pDotNext,s         
+         CALL    cataRec
+
+linecata:LDA     pLineNex,s
+         CPA     0,i
+         BREQ    endList
+         LDX     pLineNex,s
+         CALL    cataRec
+
+endcata: ADDSP   4,i         ;#pDotNext #pLineNext
+         ret0                ;
+
+compteur:.BLOCK 2            ;#2d
+
+fin:     STOP   
+  
+;*****************************
+pileBefo:.EQUATE 0           ;#2h
+
+pDotNext:.EQUATE 2           ;#2h 
+pLineNex:.EQUATE 0           ;#2h   
 ;*****************************        
+total:   .BLOCK  2           ;#2d
 begin:   .BLOCK  2           ; #2h debut de liste
 head:    .BLOCK  2           ; #2h tête de liste
 signe:   .BLOCK  1           ; #1c
 ;
 ;****** structure du noeud
 ;*****************************
+love:    .ADDRSS carac       ;#2h
 carac:   .EQUATE 0           ;#1c 
 dotNext: .EQUATE 1           ;#2h
 lineNext:.EQUATE 3           ;#2h
