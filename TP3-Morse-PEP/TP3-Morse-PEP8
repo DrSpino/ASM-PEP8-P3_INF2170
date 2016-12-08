@@ -15,15 +15,19 @@ traduire:CPA     't',i       ;
          CALL    translt     ;
 ajoute:  CPA     'a',i       ;
          BRNE    lister      ;
-         ;call addRule()
+         CALL    addRule     ;
 lister:  CPA     'l',i       ;
          BRNE    cata        ;
-         ;call lister()      ;
+         CALL    list        ;
+         STRO    stTotal,d   ;
+         DECO    total,d     ;
+         CHARO   '\n',i      ;
 cata:    CPA     'c',i       ;
          BRNE    loop        ;
          ;call  catalog()    ;
          BR      loop        ;
-          
+
+stTotal: .ASCII "total=\x00" ;          
 command: .BLOCK 1            ;#1c       
 ;******** Initialisation 
 ;*****************************
@@ -162,6 +166,7 @@ nopDe:   .ASCII "nop\x00"
 translt: LDX     begin,d     ;
          LDA     0,i         ;
          STA     nopTrs,d    ;
+         STA     endTrs,d    ;
 loopTrs: LDA     0,i         ;
          CHARI   signe,d     ;
          LDBYTEA signe,d     ;
@@ -202,25 +207,134 @@ decodTrs:LDA     nopTrs,d    ;
          BRNE    rienTrs     ;
          CHARO   carac,x     ;
 
-finiTrs: LDA     endTrs,n    ;
+finiTrs: LDA     endTrs,d    ;
          CPA     0,i         ;
          BREQ    translt     ;
          CHARO   '\n',i      ;
          ret0                ;
 
-nopTr:   .ASCII "?\x00"
-endTrs:  .EQUATE 0
-nopTrs:  .BLOCK  2
+nopTr:   .ASCII "?\x00"      ;
+endTrs:  .BLOCK  2           ;
+nopTrs:  .BLOCK  2           ;
+;*****************************
+;******* Methode addRule
+;*****************************
+addRule: LDX     begin,d     ;
+         CHARI   chara,d     ;
+loopRule:LDA     0,i         ;
+         CHARI   signe,d     ;
+         LDBYTEA signe,d     ;
+         CPA     '\n',i      ;
+         BREQ    endRule     ;
+         CPA     ' ',i       ;
+         BREQ    endRule     ;
+         
+         CPA     '.',i       ;
+         BRNE    goLine      ;
+         LDA     dotNext,x   ;
+         CPA     0,i         ;
+         BRNE    dotRule     ;
+         LDA     mLength,i
+         CALL    new         ;#carac #dotNext #lineNext #before
+         LDA     0,i         ;
+         STA     dotNext,x   ;
+         STA     lineNext,x  ;  
+         STBYTEA carac,x     ;
+         LDA     avant,d     ;
+         STA     before,x    ;
+         STX     head,d      ;
+         LDX     before,x    ;
+         LDA     head,d      ;
+         STA     dotNext,x   ;
+dotRule: LDA     dotNext,x   ;
+         STA     avant,d     ;
+         LDX     dotNext,x   ;
+         BR      loopRule    ;
 
+goLine:  CPA     '-',i       ;
+         BRNE    endRule     ;
+         LDA     lineNext,x  ;
+         CPA     0,i         ;
+         BRNE    lineRule    ;
+         LDA     mLength,i
+         CALL    new         ;#carac #dotNext #lineNext #before
+         LDA     0,i         ;
+         STA     dotNext,x   ;
+         STA     lineNext,x  ;  
+         STBYTEA carac,x     ;
+         LDA     avant,d     ;
+         STA     before,x    ;
+         STX     head,d      ;
+         LDX     before,x    ;
+         LDA     head,d      ;
+         STA     lineNext,x  ;   
+lineRule:LDA     lineNext,x  ;
+         STA     avant,d     ;
+         LDX     lineNext,x  ; 
+         BR      loopRule    ;      
+
+endRule: LDA     0,i         ;
+         LDBYTEA chara,d     ;
+         STBYTEA carac,x     ;
+         ret0                ;
+         
+         
+chara:   .BLOCK 1            ;#1c
+avant:   .BLOCK 2            ;#2h
+
+;*****************************
+;******** Methode list
+;*****************************
+list:    LDX     begin,d
+         LDA     0,i
+         STA     total,d
+
+listRec: SUBSP   4,i         ;#pDotNext #pLineNext 
+         
+         LDA     dotNext,x
+         STA     pDotNext,s 
+         LDA     lineNext,x
+         STA     pLineNex,s        
+         
+         LDA     0,i
+         LDBYTEA carac,x
+         CPA     0,i
+         BREQ    dotList
+         CHARO   carac,x
+         CHARO   '\n',i 
+         LDA     total,d
+         ADDA    1,i
+         STA     total,d 
+
+dotList: LDA     pDotNext,s
+         CPA     0,i
+         BREQ    lineList
+         LDX     pDotNext,s         
+         CALL    listRec
+
+lineList:LDA     pLineNex,s
+         CPA     0,i
+         BREQ    endList
+         LDX     pLineNex,s
+         CALL    listRec
+
+endList: ADDSP   4,i         ;#pDotNext #pLineNext
+         ret0                ;
+
+pDotNext:.EQUATE 2           ;#2h
+pLineNex:.EQUATE 0           ;#2h
+         
+total:   .BLOCK  2           ;#2d
+;*****************************
 fin:     STOP        
 ;*****************************        
 begin:   .BLOCK  2           ; #2h debut de liste
 head:    .BLOCK  2           ; #2h tête de liste
-signe:   .BLOCK  1           ;#1c
+signe:   .BLOCK  1           ; #1c
 ;
 ;****** structure du noeud
 ;*****************************
-carac:   .EQUATE 0           ;#1c
+carac:   .EQUATE 0           ;#1c 
 dotNext: .EQUATE 1           ;#2h
 lineNext:.EQUATE 3           ;#2h
 before:  .EQUATE 5           ;#2h
