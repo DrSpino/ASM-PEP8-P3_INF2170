@@ -18,13 +18,20 @@ ajoute:  CPA     'a',i       ;
          CALL    addRule     ;
 lister:  CPA     'l',i       ;
          BRNE    cata        ;
+         LDA     0,i         ;
+         STA     isCata,d    ; 
          CALL    list        ;
          STRO    stTotal,d   ;
          DECO    total,d     ;
          CHARO   '\n',i      ;
 cata:    CPA     'c',i       ;
          BRNE    loop        ;
-         CALL    catalog     ;
+         LDA     1,i         ;
+         STA     isCata,d    ;
+         CALL    list        ; 
+         STRO    stTotal,d   ;
+         DECO    total,d     ;
+         CHARO   '\n',i      ;
          BR      loop        ;
 
 stTotal: .ASCII "total=\x00" ;          
@@ -302,7 +309,15 @@ listRec: SUBSP   4,i         ;#pDotNext #pLineNext
          CPA     0,i
          BREQ    dotList
          CHARO   carac,x
-         CHARO   '\n',i 
+
+         LDA     isCata,d
+         CPA     1,i
+         BRNE    saut
+         LDA     0,i
+         STA     compteur,d
+         CALL    catalog        
+
+saut:    CHARO   '\n',i 
          LDA     total,d
          ADDA    1,i
          STA     total,d 
@@ -324,74 +339,42 @@ endList: ADDSP   4,i         ;#pDotNext #pLineNext
 
 ;*****************************
 ;******** Methode catalogue
-;*****************************
-catalog: LDX     begin,d
-         LDA     0,i
-         STA     total,d
-
-cataRec: SUBSP   4,i         ;#pDotNext #pLineNext 
-         
-         LDA     dotNext,x
-         STA     pDotNext,s 
-         LDA     lineNext,x
-         STA     pLineNex,s        
-         
-         LDA     0,i
-         LDBYTEA carac,x
-         CPA     0,i
-         BREQ    dotcata
-         CHARO   carac,x
-         
-loopCata:LDA     before,x
+;***************************** 
+catalog: LDA     before,x
          CPA     0,i
          BREQ    outCata
          SUBSP   2,i         ;#pileBefo
-         LDA     love,n
-         STA     pileBefo,s
+         STX     pileBefo,s
          LDA     compteur,d
          ADDA    1,i
          STA     compteur,d
          LDX     before,x
-         BR      loopCata
+         BR      catalog 
 
 outCata: LDX     begin,d
 loopOut: LDA     compteur,d
          SUBA    1,i
+         STA     compteur,d
          CPA     -1,i
-         BREQ    returnCa
+         BREQ    endCata
          
          LDA     pileBefo,s
          CPA     dotNext,x
          BRNE    outLine
          CHARO   '.',i
+         LDX     dotNext,x
+         ADDSP   2,i         ;#pileBefo
          BR      loopOut
 outLine: CPA     lineNext,x
          BRNE    loopOut
          CHARO   '-',i
+         LDX     lineNext,x
+         ADDSP   2,i         ;#pileBefo
          BR      loopOut 
-                  
 
-returnCa:CHARO   '\n',i 
-         LDA     total,d
-         ADDA    1,i
-         STA     total,d
- 
+endCata: ret0
 
-dotcata: LDA     pDotNext,s
-         CPA     0,i
-         BREQ    linecata
-         LDX     pDotNext,s         
-         CALL    cataRec
-
-linecata:LDA     pLineNex,s
-         CPA     0,i
-         BREQ    endList
-         LDX     pLineNex,s
-         CALL    cataRec
-
-endcata: ADDSP   4,i         ;#pDotNext #pLineNext
-         ret0                ;
-
+isCata:  .BLOCK 2            ;#2d
 compteur:.BLOCK 2            ;#2d
 
 fin:     STOP   
