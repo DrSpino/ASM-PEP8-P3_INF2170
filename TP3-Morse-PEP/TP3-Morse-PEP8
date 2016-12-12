@@ -1,41 +1,41 @@
 ;******* Main
 ;*****************************
-main:    CALL    init  
-loop:    LDA     0,i         ;
-         CHARI   command,d
+main:    CALL    init        ; call init
+loop:    LDA     0,i         ; while (command != 'q'){
+         CHARI   command,d   ;    command = lireChar
          LDBYTEA command,d   ;
-         CPA     'q',i       ;
-         BRNE    decoder     ;
-         CALL    fin         ;
-decoder: CPA     'd',i       ;
-         BRNE    traduire    ;
-         CALL    decode      ;
-traduire:CPA     't',i       ;
-         BRNE    ajoute      ;
-         CALL    translt     ;
-ajoute:  CPA     'a',i       ;
-         BRNE    lister      ;
-         CALL    addRule     ;
+         CPA     'q',i       ; 
+         BRNE    decoder     ; 
+         CALL    fin         ;    
+decoder: CPA     'd',i       ; 
+         BRNE    traduire    ;    }else if(command == 'd'){
+         CALL    decode      ;        call decode
+traduire:CPA     't',i       ; 
+         BRNE    ajoute      ;    }else if(command == 't'){
+         CALL    translt     ;        call translt
+ajoute:  CPA     'a',i       ; 
+         BRNE    lister      ;    }else if(command =='a'){
+         CALL    addRule     ;        call addRule
 lister:  CPA     'l',i       ;
-         BRNE    cata        ;
-         LDA     0,i         ;
-         STA     isCata,d    ; 
-         CALL    list        ;
-         STRO    stTotal,d   ;
+         BRNE    cata        ;    }else if(command == 'l'){
+         LDA     0,i         ;    
+         STA     isCata,d    ;        isCata = 0
+         CALL    list        ;        call list
+         STRO    stTotal,d   ; 
          DECO    total,d     ;
-         CHARO   '\n',i      ;
+         CHARO   '\n',i      ;        affiche("total ="+total+'\n')
 cata:    CPA     'c',i       ;
-         BRNE    loop        ;
+         BRNE    loop        ;    }else if(command == 'c'){
          LDA     1,i         ;
-         STA     isCata,d    ;
-         CALL    list        ; 
+         STA     isCata,d    ;        isCata = 1
+         CALL    list        ;        call list
          STRO    stTotal,d   ;
          DECO    total,d     ;
-         CHARO   '\n',i      ;
-         BR      loop        ;
+         CHARO   '\n',i      ;        affiche("total = "+total+"\n")
+         BR      loop        ;    }//fin elseif }//fin loop 
 
 stTotal: .ASCII "total=\x00" ;          
-command: .BLOCK 1            ;#1c       
+command: .BLOCK 1            ;       
 ;******** Initialisation 
 ;*****************************
 init:    LDA     mLength,i   
@@ -171,55 +171,55 @@ nopDe:   .ASCII "nop\x00"
 ;*****************************
 ;******* Methode translate
 ;*****************************
-translt: LDX     begin,d     ;
+translt: LDX     begin,d     ; X = begin
          LDA     0,i         ;
-         STA     nopTrs,d    ;
-         STA     endTrs,d    ;
-loopTrs: LDA     0,i         ;
-         CHARI   signe,d     ;
+         STA     nopTrs,d    ; nopTrs = 0
+         STA     endTrs,d    ; endTrs = 0
+loopTrs: LDA     0,i         ; while(signe != '\n'){
+         CHARI   signe,d     ;    signe = lireChar
          LDBYTEA signe,d     ;
          CPA     '\n',i      ;
-         BREQ    endTrans    ;
+         BREQ    endTrans    ; 
          CPA     ' ',i       ;
-         BREQ    outTrans    ;
-         CPA     '.',i       ;
-         BRNE    lineTran    ;
-         LDA     dotNext,x   ;
+         BREQ    outTrans    ;    if(signe != ' '){
+         CPA     '.',i       ;        
+         BRNE    lineTran    ;        if(signe == '.'){
+         LDA     dotNext,x   ;    
          CPA     0,i         ;
-         BREQ    nopTrans    ;
-         LDX     dotNext,x   ;
-lineTran:CPA     '-',i       ;
-         BRNE    loopTrs     ;
+         BREQ    nopTrans    ;            if(X.dotNext != 0){
+         LDX     dotNext,x   ;                X = X.dotNext
+lineTran:CPA     '-',i       ;            }
+         BRNE    loopTrs     ;        }else if(signe == '-'){
          LDA     lineNext,x  ;
          CPA     0,i         ;
-         BREQ    nopTrans    ;
-         LDX     lineNext,x  ;
-         BR      loopTrs     ;
-
+         BREQ    nopTrans    ;            if(X.lineNext != 0){
+         LDX     lineNext,x  ;                X = X.lineNext }
+         BR      loopTrs     ;}}
+;Pour afficher '?'
 nopTrans:LDA     1,i         ;
-         STA     nopTrs,d    ;
+         STA     nopTrs,d    ; nopTrs = 1
          BR      loopTrs     ;
-
+;Pour terminer la traduction
 endTrans:LDA     1,i         ;
-         STA     endTrs,d    ; 
-
+         STA     endTrs,d    ; endTrs = 1
+;afficher la traduction
 outTrans:LDA     0,i         ;
          LDBYTEA carac,x     ;
          CPA     0,i         ;
-         BRNE    decodTrs    ;
+         BRNE    decodTrs    ; if(X.carac == 0){
 
-rienTrs: STRO    nopTr,d     ;
-         BR      finiTrs     ;        
+rienTrs: STRO    nopTr,d     ;    print('?')
+         BR      finiTrs     ;         
 decodTrs:LDA     nopTrs,d    ;
          CPA     0,i         ;
-         BRNE    rienTrs     ;
-         CHARO   carac,x     ;
-
+         BRNE    rienTrs     ; }else{
+         CHARO   carac,x     ;    print(X.carac)
+                             ; }
 finiTrs: LDA     endTrs,d    ;
          CPA     0,i         ;
-         BREQ    translt     ;
-         CHARO   '\n',i      ;
-         ret0                ;
+         BREQ    translt     ; if(endTrs == 0){ Call translt() }
+         CHARO   '\n',i      ; print('\n')    
+         ret0                ; 
 
 nopTr:   .ASCII "?\x00"      ;
 endTrs:  .BLOCK  2           ;
@@ -227,10 +227,10 @@ nopTrs:  .BLOCK  2           ;
 ;*****************************
 ;******* Methode addRule
 ;*****************************
-addRule: LDX     begin,d     ;
-         CHARI   chara,d     ;
-loopRule:LDA     0,i         ;
-         CHARI   signe,d     ;
+addRule: LDX     begin,d     ;X = begin
+         CHARI   chara,d     ; chara = lireChar
+loopRule:LDA     0,i         ; while(signe != '\n' && signe !=' '){
+         CHARI   signe,d     ;    signe = lireChar
          LDBYTEA signe,d     ;
          CPA     '\n',i      ;
          BREQ    endRule     ;
@@ -238,57 +238,57 @@ loopRule:LDA     0,i         ;
          BREQ    endRule     ;
          
          CPA     '.',i       ;
-         BRNE    goLine      ;
+         BRNE    goLine      ;    if(signe == '.'){
          LDA     dotNext,x   ;
          CPA     0,i         ;
-         BRNE    dotRule     ;
-         LDA     mLength,i
-         CALL    new         ;#carac #dotNext #lineNext #before
+         BRNE    dotRule     ;        if(X.dotNext != 0){
+         LDA     mLength,i   ;
+         CALL    new         ; X = new Maillon(); #carac #dotNext #lineNext #before
          LDA     0,i         ;
-         STA     dotNext,x   ;
-         STA     lineNext,x  ;  
-         STBYTEA carac,x     ;
-         LDA     avant,d     ;
-         STA     before,x    ;
-         STX     head,d      ;
+         STA     dotNext,x   ;            X.dotNext = 0
+         STA     lineNext,x  ;            X.lineNext = 0
+         STBYTEA carac,x     ;            X.carac = 0
+         LDA     avant,d     ;     
+         STA     before,x    ;            X.before = avant
+         STX     head,d      ;            
          LDX     before,x    ;
          LDA     head,d      ;
-         STA     dotNext,x   ;
+         STA     dotNext,x   ;            X.dotNext = head
 dotRule: LDA     dotNext,x   ;
-         STA     avant,d     ;
+         STA     avant,d     ;            avant = X.dotNext
          LDX     dotNext,x   ;
-         BR      loopRule    ;
+         BR      loopRule    ;        }
 
 goLine:  CPA     '-',i       ;
-         BRNE    endRule     ;
+         BRNE    endRule     ;    if(X.lineNext == '-'){        
          LDA     lineNext,x  ;
          CPA     0,i         ;
-         BRNE    lineRule    ;
+         BRNE    lineRule    ;        if(X.lineNext != 0){
          LDA     mLength,i
-         CALL    new         ;#carac #dotNext #lineNext #before
+         CALL    new         ; X = new Maillon(); #carac #dotNext #lineNext #before
          LDA     0,i         ;
-         STA     dotNext,x   ;
-         STA     lineNext,x  ;  
-         STBYTEA carac,x     ;
+         STA     dotNext,x   ;            X.dotNext = 0
+         STA     lineNext,x  ;            X.lineNext = 0
+         STBYTEA carac,x     ;            X.carac = 0
          LDA     avant,d     ;
-         STA     before,x    ;
+         STA     before,x    ;            X.before = avant
          STX     head,d      ;
          LDX     before,x    ;
          LDA     head,d      ;
-         STA     lineNext,x  ;   
+         STA     lineNext,x  ;            X.lineNext = head
 lineRule:LDA     lineNext,x  ;
-         STA     avant,d     ;
+         STA     avant,d     ;            avant = X.lineNext
          LDX     lineNext,x  ; 
-         BR      loopRule    ;      
-
+         BR      loopRule    ;      }
+                             ;}}//end while
 endRule: LDA     0,i         ;
          LDBYTEA chara,d     ;
-         STBYTEA carac,x     ;
+         STBYTEA carac,x     ; X.carac = chara
          ret0                ;
          
          
-chara:   .BLOCK 1            ;#1c
-avant:   .BLOCK 2            ;#2h
+chara:   .BLOCK 1            ;
+avant:   .BLOCK 2            ;
 
 ;*****************************
 ;******** Methode list
@@ -313,6 +313,7 @@ listRec: SUBSP   4,i         ;#pDotNext #pLineNext
          LDA     isCata,d
          CPA     1,i
          BRNE    saut
+         CHARO   ' ',i
          LDA     0,i
          STA     compteur,d
          CALL    catalog        
@@ -334,8 +335,7 @@ lineList:LDA     pLineNex,s
          LDX     pLineNex,s
          CALL    listRec
 
-endList: ADDSP   4,i         ;#pDotNext #pLineNext
-         ret0                ;
+endList: ret4                ;#pDotNext #pLineNext
 
 ;*****************************
 ;******** Methode catalogue
@@ -377,8 +377,9 @@ endCata: ret0
 isCata:  .BLOCK 2            ;#2d
 compteur:.BLOCK 2            ;#2d
 
-fin:     STOP   
-  
+fin:     STOP                ; fin du programme
+ 
+;******* Piles  
 ;*****************************
 pileBefo:.EQUATE 0           ;#2h
 
@@ -390,9 +391,8 @@ begin:   .BLOCK  2           ; #2h debut de liste
 head:    .BLOCK  2           ; #2h tête de liste
 signe:   .BLOCK  1           ; #1c
 ;
-;****** structure du noeud
+;******* structure du noeud
 ;*****************************
-love:    .ADDRSS carac       ;#2h
 carac:   .EQUATE 0           ;#1c 
 dotNext: .EQUATE 1           ;#2h
 lineNext:.EQUATE 3           ;#2h
