@@ -296,49 +296,49 @@ avant:   .BLOCK 2            ; char before current
 ;*****************************
 ;******** Methode list
 ;*****************************
-list:    LDX     begin,d
-         LDA     0,i
-         STA     total,d
+list:    LDX     begin,d     ;
+         LDA     0,i         ;
+         STA     total,d     ;
 
-listRec: SUBSP   4,i          
+listRec: SUBSP   4,i          ;
          
-         LDA     dotNext,x
-         STA     pDotNext,s 
-         LDA     lineNext,x
-         STA     pLineNex,s        
+         LDA     dotNext,x    ;
+         STA     pDotNext,s   ;
+         LDA     lineNext,x   ;
+         STA     pLineNex,s   ;     
          
-         LDA     0,i
-         LDBYTEA carac,x
-         CPA     0,i
-         BREQ    dotList
-         CHARO   carac,x
+         LDA     0,i          ;
+         LDBYTEA carac,x      ;
+         CPA     0,i          ; if(tete.encodedCharacter != '0'){
+         BREQ    dotList      ;
+         CHARO   carac,x      ;
 
-         LDA     isCata,d
-         CPA     1,i
-         BRNE    saut
-         CHARO   ' ',i
-         LDA     0,i
-         STA     compteur,d
-         CALL    catalog        
+         LDA     isCata,d     ;
+         CPA     1,i          ;
+         BRNE    saut         ;
+         CHARO   ' ',i        ;
+         LDA     0,i          ;
+         STA     compteur,d   ;
+         CALL    catalog      ; affiche(tete,null); 
 
-saut:    CHARO   '\n',i 
-         LDA     total,d
-         ADDA    1,i
-         STA     total,d 
+saut:    CHARO   '\n',i       ; Pep8.charo('\n');
+         LDA     total,d      ;
+         ADDA    1,i          ; total += 1;
+         STA     total,d      ; }
 
-dotList: LDA     pDotNext,s
-         CPA     0,i
-         BREQ    lineList
-         LDX     pDotNext,s         
-         CALL    listRec
+dotList: LDA     pDotNext,s   ;
+         CPA     0,i          ; if(tete.dotNext != null){
+         BREQ    lineList     ;
+         LDX     pDotNext,s   ;     
+         CALL    listRec      ; list(tete.dotNext);
 
-lineList:LDA     pLineNex,s
-         CPA     0,i
-         BREQ    endList
-         LDX     pLineNex,s
-         CALL    listRec
+lineList:LDA     pLineNex,s   ;
+         CPA     0,i          ; if(tete.lineNext != null){
+         BREQ    endList      ;
+         LDX     pLineNex,s   ;
+         CALL    listRec      ; list(tete.lineNext); 
 
-endList: ret4                
+endList: ret4                 ; }
 
 ;*****************************
 ;******** Methode catalogue
