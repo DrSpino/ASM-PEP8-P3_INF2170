@@ -1,3 +1,4 @@
+;****************************
 ;******* Main
 ;*****************************
 main:    CALL    init        ; call init
@@ -34,12 +35,13 @@ cata:    CPA     'c',i       ;
          CHARO   '\n',i      ;        affiche("total = "+total+"\n")
          BR      loop        ;    }//fin elseif }//fin loop 
 
-stTotal: .ASCII "total=\x00" ;          
-command: .BLOCK 1            ;       
+stTotal: .ASCII "total=\x00" ;
+command: .BLOCK 1            ;
+;*****************************
 ;******** Initialisation 
 ;*****************************
 init:    LDA     mLength,i   
-         CALL    new         ;#carac #dotNext #lineNext #before
+         CALL    new         
          LDA     0,i   
          STA     dotNext,x
          STA     lineNext,x  
@@ -47,9 +49,9 @@ init:    LDA     mLength,i
          STBYTEA carac,x     
          STX     begin,d     
          STX     head,d   
-;  Noeud 'E' 
+;  Node 'E' 
          LDA     mLength,i   
-         CALL    new         ;#carac #dotNext #lineNext #before
+         CALL    new         
          LDA     0,i   
          STA     dotNext,x
          STA     lineNext,x       
@@ -61,10 +63,10 @@ init:    LDA     mLength,i
          LDX     before,x    
          LDA     head,d      
          STA     dotNext,x   
-;  Noeud '0'
+;  Node '0'
          LDX     dotNext,x   
          LDA     mLength,i   
-         CALL    new         ;#carac #dotNext #lineNext #before
+         CALL    new         
          LDA     0,i    
          STA     dotNext,x
          STA     lineNext,x     
@@ -75,10 +77,10 @@ init:    LDA     mLength,i
          LDX     before,x    
          LDA     head,d      
          STA     dotNext,x  
-;  Noeud 'S'
+;  Node 'S'
          LDX     dotNext,x   
          LDA     mLength,i   
-         CALL    new         ;#carac #dotNext #lineNext #before
+         CALL    new         
          LDA     0,i         
          STA     dotNext,x
          STA     lineNext,x 
@@ -90,10 +92,10 @@ init:    LDA     mLength,i
          LDX     before,x    
          LDA     head,d      
          STA     dotNext,x  
- ; Noeud 'T'
+ ; Node 'T'
          LDX     begin,d     
          LDA     mLength,i   
-         CALL    new         ;#carac #dotNext #lineNext #before
+         CALL    new         
          LDA     0,i        
          STA     dotNext,x
          STA     lineNext,x  
@@ -105,10 +107,10 @@ init:    LDA     mLength,i
          LDX     before,x    
          LDA     head,d      
          STA     lineNext,x  
-; Noeud '0'
+; Node '0'
          LDX     lineNext,x  
          LDA     mLength,i   
-         CALL    new         ;#carac #dotNext #lineNext #before
+         CALL    new         
          LDA     0,i         
          STA     dotNext,x
          STA     lineNext,x       
@@ -119,10 +121,10 @@ init:    LDA     mLength,i
          LDX     before,x    
          LDA     head,d      
          STA     lineNext,x   
-; Noeud 'O'
+; Node 'O'
          LDX     lineNext,x  
          LDA     mLength,i   
-         CALL    new         ;#carac #dotNext #lineNext #before
+         CALL    new         
          LDA     0,i        
          STA     dotNext,x
          STA     lineNext,x  
@@ -135,6 +137,7 @@ init:    LDA     mLength,i
          LDA     head,d      
          STA     lineNext,x  
          ret0 
+;*****************************         
 ;***** Methode decode
 ;*****************************
 decode:  LDX     begin,d     ; X = begin
@@ -167,7 +170,7 @@ Decode:  CHARO   carac,x     ;        afficher(X.carac)}
 endDecod:CHARO   '\n',i      ;    afficher('\n')
          ret0                ;}
 ;
-nopDe:   .ASCII "nop\x00"
+nopDe:   .ASCII "nop\x00"    ; error string
 ;*****************************
 ;******* Methode translate
 ;*****************************
@@ -194,7 +197,7 @@ lineTran:CPA     '-',i       ;            }
          CPA     0,i         ;
          BREQ    nopTrans    ;            if(X.lineNext != 0){
          LDX     lineNext,x  ;                X = X.lineNext }
-         BR      loopTrs     ;}}
+         BR      loopTrs     ; }}
 ;Pour afficher '?'
 nopTrans:LDA     1,i         ;
          STA     nopTrs,d    ; nopTrs = 1
@@ -227,7 +230,7 @@ nopTrs:  .BLOCK  2           ;
 ;*****************************
 ;******* Methode addRule
 ;*****************************
-addRule: LDX     begin,d     ;X = begin
+addRule: LDX     begin,d     ; X = begin
          CHARI   chara,d     ; chara = lireChar
 loopRule:LDA     0,i         ; while(signe != '\n' && signe !=' '){
          CHARI   signe,d     ;    signe = lireChar
@@ -280,15 +283,15 @@ lineRule:LDA     lineNext,x  ;
          STA     avant,d     ;            avant = X.lineNext
          LDX     lineNext,x  ; 
          BR      loopRule    ;      }
-                             ;}}//end while
+                             ; }}//end while
 endRule: LDA     0,i         ;
          LDBYTEA chara,d     ;
          STBYTEA carac,x     ; X.carac = chara
          ret0                ;
          
          
-chara:   .BLOCK 1            ;
-avant:   .BLOCK 2            ;
+chara:   .BLOCK 1            ; current char
+avant:   .BLOCK 2            ; char before current
 
 ;*****************************
 ;******** Methode list
@@ -297,7 +300,7 @@ list:    LDX     begin,d
          LDA     0,i
          STA     total,d
 
-listRec: SUBSP   4,i         ;#pDotNext #pLineNext 
+listRec: SUBSP   4,i          
          
          LDA     dotNext,x
          STA     pDotNext,s 
@@ -335,7 +338,7 @@ lineList:LDA     pLineNex,s
          LDX     pLineNex,s
          CALL    listRec
 
-endList: ret4                ;#pDotNext #pLineNext
+endList: ret4                
 
 ;*****************************
 ;******** Methode catalogue
@@ -343,7 +346,7 @@ endList: ret4                ;#pDotNext #pLineNext
 catalog: LDA     before,x
          CPA     0,i
          BREQ    outCata
-         SUBSP   2,i         ;#pileBefo
+         SUBSP   2,i         
          STX     pileBefo,s
          LDA     compteur,d
          ADDA    1,i
@@ -363,48 +366,48 @@ loopOut: LDA     compteur,d
          BRNE    outLine
          CHARO   '.',i
          LDX     dotNext,x
-         ADDSP   2,i         ;#pileBefo
+         ADDSP   2,i         
          BR      loopOut
 outLine: CPA     lineNext,x
          BRNE    loopOut
          CHARO   '-',i
          LDX     lineNext,x
-         ADDSP   2,i         ;#pileBefo
+         ADDSP   2,i         
          BR      loopOut 
 
 endCata: ret0
 
-isCata:  .BLOCK 2            ;#2d
-compteur:.BLOCK 2            ;#2d
+isCata:  .BLOCK 2            ;
+compteur:.BLOCK 2            ;
 
-fin:     STOP                ; fin du programme
+fin:     STOP                ; end of program
  
 ;******* Piles  
 ;*****************************
-pileBefo:.EQUATE 0           ;#2h
+pileBefo:.EQUATE 0           ;
 
-pDotNext:.EQUATE 2           ;#2h 
-pLineNex:.EQUATE 0           ;#2h   
+pDotNext:.EQUATE 2           ; 
+pLineNex:.EQUATE 0           ;   
 ;*****************************        
-total:   .BLOCK  2           ;#2d
-begin:   .BLOCK  2           ; #2h debut de liste
-head:    .BLOCK  2           ; #2h tête de liste
-signe:   .BLOCK  1           ; #1c
+total:   .BLOCK  2           ;
+begin:   .BLOCK  2           ; list's start
+head:    .BLOCK  2           ; list's head
+signe:   .BLOCK  1           ; 
 ;
 ;******* structure du noeud
 ;*****************************
-carac:   .EQUATE 0           ;#1c 
-dotNext: .EQUATE 1           ;#2h
-lineNext:.EQUATE 3           ;#2h
-before:  .EQUATE 5           ;#2h
-mLength: .EQUATE 7           ;taille d'un noeud
+carac:   .EQUATE 0           ; 
+dotNext: .EQUATE 1           ;
+lineNext:.EQUATE 3           ;
+before:  .EQUATE 5           ;
+mLength: .EQUATE 7           ; size of a node
 ;******* operator new
 ; Precondition: A contains number of bytes
 ; Postcondition: X contains pointer to bytes
-new:     LDX     hpPtr,d     ;returned pointer
-         ADDA    hpPtr,d     ;allocate from heap
-         STA     hpPtr,d     ;update hpPtr
+new:     LDX     hpPtr,d     ; returned pointer
+         ADDA    hpPtr,d     ; allocate from heap
+         STA     hpPtr,d     ; update hpPtr
          RET0                
-hpPtr:   .ADDRSS heap        ;address of next free byte
-heap:    .BLOCK  1           ;first byte in the heap
+hpPtr:   .ADDRSS heap        ; address of next free byte
+heap:    .BLOCK  1           ; first byte in the heap
          .END                  
